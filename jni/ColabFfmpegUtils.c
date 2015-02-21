@@ -159,9 +159,14 @@ JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
 		//open the codec
 		__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "Open the codec");
 		avcodec_open2(pcodecctx, pcodec, NULL);
+
+		//Free the malloc
+		av_free(vs);
 		return 0;
     } else {
     	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "JNI naInit Returning error code - returnCode: %d", returnCode);
+    	//Free the malloc
+    	av_free(vs);
     	return returnCode;
     }
 }
@@ -218,18 +223,20 @@ JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
 
 static void av_log_Wrapper (void *avcl, int level, const char *fmt,...) {
 	//Wrapper to redirect logs to the Android logcat logs
-	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "In av_log_Wrapper...");
-
+	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "In av_log_Wrapper: ");
 	va_list vl;
-	va_start(vl, fmt);
+	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, fmt, vl);
+
+	//va_list vl;
+	//va_start(vl, fmt);
 
 	//Log to Android
-	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, fmt, vl);
+	//__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, fmt, vl);
 
 	//Call the original ffmpeg av_log
 	av_log(avcl, level, fmt, vl);
 
-	va_end(vl);
+	//va_end(vl);
 }
 
 
@@ -4105,8 +4112,10 @@ JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
 	/* parse options and open all input/output files */
 	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "JNI ffmpegWrapper parse options and open all input/output files");
 	ret = ffmpeg_parse_options(argc, argv);
-	if (ret < 0)
+	if (ret < 0) {
+		__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "JNI ffmpegWrapper parse options ret: %d",ret);
 		exit_program(1);
+	}
 
 	if (nb_output_files <= 0 && nb_input_files == 0) {
 		show_usage();
@@ -4141,6 +4150,9 @@ JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
 		   decode_error_stat[0], decode_error_stat[1]);
 	if ((decode_error_stat[0] + decode_error_stat[1]) * max_error_rate < decode_error_stat[1])
 		exit_program(69);
+
+	//Tidy up mallocs
+	free(argv);
 
 	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, " and return main_return_code");
 	return received_nb_signals ? 255 : main_return_code;
