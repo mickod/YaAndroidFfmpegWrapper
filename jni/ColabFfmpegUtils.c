@@ -234,9 +234,10 @@ static void av_log_Wrapper (void *avcl, int level, const char *fmt,...) {
 	//__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, fmt, vl);
 
 	//Call the original ffmpeg av_log
-	av_log(avcl, level, fmt, vl);
+	//av_log(avcl, level, fmt, vl);
 
 	//va_end(vl);
+
 }
 
 
@@ -4114,20 +4115,28 @@ JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
 	ret = ffmpeg_parse_options(argc, argv);
 	if (ret < 0) {
 		__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "JNI ffmpegWrapper parse options ret: %d",ret);
-		exit_program(1);
+		//Tidy up mallocs
+		free(argv);
+		return -1;
 	}
 
+	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "nb_output_files <= 0 && nb_input_files == 0");
 	if (nb_output_files <= 0 && nb_input_files == 0) {
 		show_usage();
 		av_log_Wrapper(NULL, AV_LOG_WARNING, "Use -h to get full help or, even better, run 'man %s'\n", program_name);
-		exit_program(1);
+		//Tidy up mallocs
+		free(argv);
+		return -1;
 	}
 
 	/* file converter / grab */
 	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "file converter / grab");
 	if (nb_output_files <= 0) {
 		av_log_Wrapper(NULL, AV_LOG_FATAL, "At least one output file must be specified\n");
-		exit_program(1);
+		//Tidy up mallocs
+		free(argv);
+		exit_program(0);
+		return -1;
 	}
 
 //     if (nb_input_files == 0) {
@@ -4140,7 +4149,9 @@ JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
 	current_time = ti = getutime();
 	if (transcode() < 0) {
 		__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "transcode() was < 0...");
-		exit_program(1);
+		//Tidy up mallocs
+		free(argv);
+		return -1;
 	}
 	ti = getutime() - ti;
 	if (do_benchmark) {
@@ -4148,20 +4159,15 @@ JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
 	}
 	av_log_Wrapper(NULL, AV_LOG_DEBUG, "%"PRIu64" frames successfully decoded, %"PRIu64" decoding errors\n",
 		   decode_error_stat[0], decode_error_stat[1]);
-	if ((decode_error_stat[0] + decode_error_stat[1]) * max_error_rate < decode_error_stat[1])
-		exit_program(69);
+	if ((decode_error_stat[0] + decode_error_stat[1]) * max_error_rate < decode_error_stat[1]) {
+		//Tidy up mallocs
+		free(argv);
+		return -69; //original ffmpeg exit code
+	}
 
+	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "Free mallocs and return main_return_code");
 	//Tidy up mallocs
 	free(argv);
-
-	__android_log_print(ANDROID_LOG_VERBOSE, APPNAME, " and return main_return_code");
 	return received_nb_signals ? 255 : main_return_code;
 	//return main_return_code;
 }
-
-
-
-
-
-
-
