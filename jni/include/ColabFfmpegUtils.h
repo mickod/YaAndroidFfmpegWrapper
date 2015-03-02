@@ -10,6 +10,47 @@ extern "C" {
 
 /*
  * Class:     com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
+ * Method:    naInit
+ * Signature: (Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper_naInit
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
+ * Method:    naGetVideoRes
+ * Signature: ()[I
+ */
+JNIEXPORT jintArray JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper_naGetVideoRes
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
+ * Method:    naFinish
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper_naFinish
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
+ * Method:    naGetDuration
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper_naGetDuration
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
+ * Method:    naGetFrameRate
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper_naGetFrameRate
+  (JNIEnv *, jclass);
+
+
+/*
+ * Class:     com_amodtech_yaandroidffmpegwrapper_FfmpegJNIWrapper
  * Method:    ffmpegWrapper
  * Signature: ([Ljava/lang/String;)I
  */
